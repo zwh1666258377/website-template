@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { sha1 } from 'utility';
 import express from 'express';
 import createError from 'http-errors';
 import cookieParser from 'cookie-parser';
@@ -12,6 +13,7 @@ import connectMongo from 'connect-mongo';
 import path from 'path';
 import dotenv from 'dotenv';
 import { test } from './api/test';
+import { UserSchema } from './schema/model/user';
 
 dotenv.config('../.env' as any);
 
@@ -116,7 +118,31 @@ class App {
         useNewUrlParser: true,
         useUnifiedTopology: true,
       })
-      .then(() => console.log('MongoDB connected, compile successed!'))
+      .then(async r => {
+        console.log('MongoDB connected, compile successed!');
+        const user = {
+          account: 'root',
+          password: '123456',
+        };
+        if (!!process.env?.USER_ACCOUNT && !!process.env?.USER_PASSWORD) {
+          user.account = process.env?.USER_ACCOUNT;
+          user.password = process.env?.USER_PASSWORD;
+        }
+        const count = await UserSchema.countDocuments({});
+
+        if (count > 0) {
+          await r.connection.db.dropCollection('users');
+        }
+
+        await UserSchema.create({
+          account: user.account,
+          password: sha1(user.password),
+        });
+
+        console.log('User init successed!');
+        console.log(`Account:${user.account}`);
+        console.log(`Password:${user.password}`);
+      })
       .catch(err => console.log(err));
   };
 }
