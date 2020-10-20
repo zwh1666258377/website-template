@@ -13,6 +13,8 @@ import connectMongo from 'connect-mongo';
 import path from 'path';
 import dotenv from 'dotenv';
 import { test } from './api/test';
+import { login } from './api/login';
+import { logout } from './api/logout';
 import { UserSchema } from './schema/model/user';
 
 dotenv.config('../.env' as any);
@@ -109,6 +111,8 @@ class App {
 
   setRoutes = () => {
     test(this.app);
+    login(this.app);
+    logout(this.app);
   };
 
   connectDb = () => {
